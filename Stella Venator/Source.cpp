@@ -1,4 +1,5 @@
 #include "WindowObject.h"
+#include "Shader.h"
 
 int main(int argc, char** argv) {
 
@@ -9,7 +10,7 @@ int main(int argc, char** argv) {
 	//Load GL func.
 	gladLoadGL();
 
-	//Shader shader("C:/Dev/Stella Venator/Shaders/VertexShader.txt", "C:/Dev/Stella Venator/Shaders/FragmentShader.txt");
+	Shader shader("C:/Dev/Stella Venator/Shaders/VertexShader.txt", "C:/Dev/Stella Venator/Shaders/FragmentShader.txt");
 
 	float verts[] = {
 		-0.5f, 0.5f, 0.0f, //A
@@ -50,11 +51,11 @@ int main(int argc, char** argv) {
 		glClearColor(0.17f, 0.35f, 0.27f, 1.0f); //Set the color of the window.
 		glClear(GL_COLOR_BUFFER_BIT); //Clear the color buffer.
 
-		//shader.bind();
+		shader.bind();
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
-		//shader.unbind();
+		shader.unbind();
 
 		mainWindowObject->windowBufferSwap();
 		mainWindowObject->updateEvents();
