@@ -52,14 +52,10 @@ WindowObject::WindowObject(unsigned int width, unsigned int height, const char* 
 	this->canViewportUpdate = true;
 }
 
-void WindowObject::windowBufferSwap()
+void WindowObject::updateWindow()
 {
 	//Swaps the loaded back buffer with the current displayed front buffer
 	glfwSwapBuffers(this->windowContext);
-}
-
-void WindowObject::updateEvents()
-{
 	//Updates input events
 	glfwPollEvents();
 }

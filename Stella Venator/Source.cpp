@@ -34,7 +34,6 @@ int main(int argc, char** argv) {
 	};
 	/////////////////////////////////////
 
-
 	//Build Mesh from MeshFactory
 	MeshFactory meshFactory = MeshFactory();
 	Mesh mesh1 = meshFactory.createMesh(verticies, sizeof(verticies)/sizeof(verticies[0]), //Vertex data
@@ -62,8 +61,7 @@ int main(int argc, char** argv) {
 		glBindTexture(GL_TEXTURE_2D, 0);
 		shader->unbind();
 
-		mainWindowObject->windowBufferSwap();
-		mainWindowObject->updateEvents();
+		mainWindowObject->updateWindow();
 	}
 	//Memory cleanup.
 	meshFactory.cleanUp();

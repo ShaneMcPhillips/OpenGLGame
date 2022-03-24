@@ -30,9 +30,7 @@ public:
 		return glfwWindowShouldClose(this->windowContext);
 	};
 
-	void windowBufferSwap();
-
-	void updateEvents();
+	void updateWindow();
 
 	void toggleFullscreen();
 
