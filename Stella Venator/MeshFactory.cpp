@@ -8,45 +8,41 @@ Mesh MeshFactory::createMesh(Vertex* verticies, unsigned int vertexCount,
     unsigned int* indicies, unsigned int drawCount, 
     TextureCoord* texCoords, const char* textureFile)
 {
-    unsigned int vao, vbo, tbo, ebo;
-
+    unsigned int vao;
     //generate and bind new vertex array object.
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    //generate vertex buffer object and element buffer object + texture buffer object.
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &tbo);
-    glGenBuffers(1, &ebo);
-    
-    //Bind VBO and buffer the data.
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(*verticies) * vertexCount, verticies, GL_STATIC_DRAW);
+    //Store data into buffer objects and set correct attribute indexes.
+    this->storeAttributePointer(0, 3, sizeof(*verticies) * vertexCount, verticies);
+    this->storeAttributePointer(1, 2, sizeof(*texCoords) * vertexCount, texCoords);
+    //Store data into the index buffer for more efficient draw calls.
+    this->storeIndexBuffer(indicies, drawCount);
 
-    //Pass in vertex array attribute
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-    //Bind TBO and buffer the data.
-    glBindBuffer(GL_ARRAY_BUFFER, tbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(*texCoords) * vertexCount, texCoords, GL_STATIC_DRAW);
-    
-    //Pass in vertex array attribute
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-    //Bind the EBO and buffer the data.
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(*indicies) * drawCount, indicies, GL_STATIC_DRAW);
-
-    //Disable buffers
+    //Disable bound buffers.
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    unsigned int textureID = this->createTexture(textureFile);
+    //Add vertex array object to vector list for clean up later
+    this->arrayObjects.push_back(vao);
 
+    //Grab texture ID and add to vector list for clean up later
+    unsigned int textureID = this->createTexture(textureFile);
+    this->textureObjects.push_back(textureID);
+    //Return Mesh Object. No need to return object as dynamically allocated memory, Mesh Object copies are completely OK here
     return Mesh(vao, drawCount, textureID);
+}
+
+void MeshFactory::cleanUp()
+{
+    //Delete buffers from vector list, then clean vector list (for each known buffer object)
+    glDeleteBuffers(this->bufferObjects.size(), this->bufferObjects.data());
+    this->bufferObjects.clear();
+    glDeleteTextures(this->textureObjects.size(), this->textureObjects.data());
+    this->textureObjects.clear();
+    glDeleteVertexArrays(this->arrayObjects.size(), this->arrayObjects.data());
+    this->arrayObjects.clear();
 }
 
 unsigned int MeshFactory::createTexture(const char* textureFile)
@@ -84,6 +80,34 @@ unsigned int MeshFactory::createTexture(const char* textureFile)
     //Free up the data from stb_image processing.
     stbi_image_free(image_data);
     return textureID;
+}
+
+void MeshFactory::storeAttributePointer(unsigned int attributeIndex, unsigned int attributeValueSize, GLsizeiptr size, const void* data)
+{
+    //generate vertex buffer object
+    unsigned int vbo;
+    glGenBuffers(1, &vbo);
+    //Bind the buffer and buffer the data to the bound buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    //Enable the vertex attribute at the specified index
+    glEnableVertexAttribArray(attributeIndex);
+    //Set the attribute pointer data to the specified index
+    glVertexAttribPointer(attributeIndex, attributeValueSize, GL_FLOAT, GL_FALSE, 0, 0);
+    //Store the vertex buffer object with others to clean up later
+    this->bufferObjects.push_back(vbo);
+}
+
+void MeshFactory::storeIndexBuffer(unsigned int* indicies, unsigned int indexCount)
+{
+    //generate element buffer object
+    unsigned int ebo;
+    glGenBuffers(1, &ebo);
+    //Bind the element buffer and send the data to the bound buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(*indicies) * indexCount, indicies, GL_STATIC_DRAW);
+    //Store buffer object with others to clean up later
+    this->bufferObjects.push_back(ebo);
 }
 
 MeshFactory::~MeshFactory()

@@ -66,8 +66,7 @@ int main(int argc, char** argv) {
 		mainWindowObject->updateEvents();
 	}
 	//Memory cleanup.
-	unsigned int vao = mesh1.getVAOID();
-	glDeleteVertexArrays(1, &vao);
+	meshFactory.cleanUp();
 	delete shader;
 	delete mainWindowObject;
 
