@@ -62,6 +62,8 @@ void WindowObject::updateWindow()
 
 void WindowObject::toggleFullscreen()
 {
+	std::cout << "Change FS" << std::endl;
+	this->fsToggle = true;
 	if (this->windowProps.windowMode == FULL_SCREEN) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 		
 		//Refresh rate is 0 since glfw disregards it when passing nullptr as an active monitor.
@@ -80,29 +82,50 @@ void WindowObject::toggleFullscreen()
 		this->windowProps.windowMode = FULL_SCREEN;
 	}
 	this->canViewportUpdate = true;
+	
 }
 
 /*
 *	Called in render loop. Updates the viewport to the current size of the frame buffer after checking if the window was resized.
 */
-void WindowObject::getViewportUpdate()
+bool WindowObject::getViewportUpdate()
 {
 	//Check if we need to update the viewport
 	if (!this->canViewportUpdate)
-		return;
+		return false;
 
 	//Get the size of the screen in pixels
 	glfwGetFramebufferSize(this->windowContext, &this->windowProps.pWidth, &this->windowProps.pHeight);
 	//Send pixel size to the viewport
 	glViewport(0, 0, this->windowProps.pWidth, this->windowProps.pHeight);
 	this->canViewportUpdate = false;
+	return true;
+}
+
+float WindowObject::getAspectRatio()
+{
+	if (this->windowProps.windowMode == FULL_SCREEN) {
+		const GLFWvidmode* vidMode = glfwGetVideoMode(this->monitor);
+		return (float)(vidMode->width / vidMode->height);
+	}
+	else {
+		return (float)(this->windowProps.width / this->windowProps.height); //Divide by 0??
+	}
+	return 0.0f;
 }
 
 void WindowObject::handleWindowSizeChange(GLFWwindow* window, int width, int height)
 {
+	std::cout << "Change" << std::endl;
 	//Since the size of the window has changed, we need to update the viewport.
 	void* ptr = glfwGetWindowUserPointer(window);
 	if (WindowObject* wPtr = static_cast<WindowObject*>(ptr)) {
+		if (!wPtr->fsToggle) {
+			wPtr->updateSize(width, height);
+		}
+		else {
+			wPtr->fsToggle = false;
+		}
 		wPtr->stageUpdateViewport();
 	}
 }
@@ -126,6 +149,13 @@ void WindowObject::handleErrorCallback(int error, const char* error_description)
 void WindowObject::stageUpdateViewport()
 {
 	this->canViewportUpdate = true;
+}
+
+void WindowObject::updateSize(int width, int height)
+{
+	std::cout << "Size Change" << std::endl;
+	this->windowProps.width = width;
+	this->windowProps.height = height;
 }
 
 WindowObject::~WindowObject()

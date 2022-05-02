@@ -61,6 +61,11 @@ void Shader::setUniformInt(const std::string& name, int value) const {
 	glUniform1i(glGetUniformLocation(m_programID, name.c_str()), value);
 }
 
+void Shader::setUniformMat4(const std::string& name, glm::mat4 matrix)
+{
+	glUniformMatrix4fv(glGetUniformLocation(this->m_programID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
 Shader::~Shader() {
 	glDeleteProgram(m_programID);
 }

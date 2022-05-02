@@ -34,7 +34,9 @@ public:
 
 	void toggleFullscreen();
 
-	void getViewportUpdate();
+	bool getViewportUpdate();
+
+	float getAspectRatio();
 
 	virtual ~WindowObject();
 
@@ -49,6 +51,10 @@ private:
 	static void handleKeyCallback(GLFWwindow* window, int keycode, int scancode, int action, int mods);
 	static void handleErrorCallback(int error, const char* error_description);
 	void stageUpdateViewport();
+
+	void updateSize(int width, int height);
+
+	bool fsToggle = false;
 
 };
 
